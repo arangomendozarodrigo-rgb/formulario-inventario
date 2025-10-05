@@ -103,10 +103,10 @@
       const cantidadInput = document.getElementById("cantidad");
       const labelCantidad = document.getElementById("labelCantidad");
 
-      // Tu Web App URL
+      // URL de tu Web App de Google Script
       const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwUjC9cSUh0tvEvOA2E1315uClW56LppdMrjlblZ8Ha4YQVZ8hFVWVNuuv5-USiqATgDw/exec";
 
-      // Cargar herramientas desde Google Sheets
+      // Cargar herramientas desde la Web App
       fetch(WEB_APP_URL)
         .then(res => res.json())
         .then(herramientas => {
@@ -141,6 +141,8 @@
       document.getElementById("miFormulario").addEventListener("submit", function(e){
         e.preventDefault();
 
+        let payload = {};
+
         if(herramientaInput.value === "Otros"){
           const nuevoNombre = document.getElementById("nuevoNombre").value.trim();
           const cantidadInicial = parseInt(document.getElementById("cantidadInicial").value);
@@ -150,37 +152,42 @@
             return;
           }
 
-          fetch(WEB_APP_URL, {
-            method: "POST",
-            body: JSON.stringify({
-              nombre: this.nombre.value,
-              operacion: "Ingreso",
-              herramienta: nuevoNombre,
-              cantidad: cantidadInicial
-            })
-          }).then(res => res.json())
-            .then(data => alert("✅ Registro guardado correctamente!"));
+          payload = {
+            nombre: this.nombre.value,
+            operacion: "Ingreso",
+            herramienta: nuevoNombre,
+            cantidad: cantidadInicial
+          };
 
         } else {
           const cantidad = parseInt(cantidadInput.value);
-
-          fetch(WEB_APP_URL, {
-            method: "POST",
-            body: JSON.stringify({
-              nombre: this.nombre.value,
-              operacion: this.operacion.value,
-              herramienta: herramientaInput.value,
-              cantidad: cantidad
-            })
-          }).then(res => res.json())
-            .then(data => alert("✅ Registro guardado correctamente!"));
+          payload = {
+            nombre: this.nombre.value,
+            operacion: this.operacion.value,
+            herramienta: herramientaInput.value,
+            cantidad: cantidad
+          };
         }
 
-        this.reset();
-        otrosCampos.style.display = "none";
-        cantidadInput.style.display = "block";
-        labelCantidad.style.display = "block";
+        // Enviar datos a la Web App
+        fetch(WEB_APP_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+          alert("✅ Registro guardado correctamente!");
+          this.reset();
+          otrosCampos.style.display = "none";
+          cantidadInput.style.display = "block";
+          labelCantidad.style.display = "block";
+        })
+        .catch(err => {
+          console.error(err);
+          alert("❌ Error al guardar. Revisa tu Web App.");
+        });
       });
     </script>
   </body>
 </html>
+
