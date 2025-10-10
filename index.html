@@ -55,6 +55,7 @@
 <div class="container">
   <img src="https://lpalimasur.com/assets/images/logo/LOGO_LATAM.png" alt="Logo LPA">
   <h2>Registro de Inventario</h2>
+
   <form id="miFormulario">
     <label for="nombre">Nombre:</label>
     <input type="text" id="nombre" name="nombre" required>
@@ -85,15 +86,15 @@
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzBXVKyGAy4_ZFynhcrnQWhWJaZuAuGBHCazkPHrGnSQVTSfQ8elTwfhnKbOMtjH1TB_Q/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxfbD4tdsG8ttFhHgBto5YJfJM4dJZ0SZkJ8h9AHHDtGJ1xgH7iKrZhGVNnmu1dBki31Q/exec";
 
 const herramientaInput = document.getElementById("herramienta");
 const otrosCampos = document.getElementById("otrosCampos");
 const cantidadInput = document.getElementById("cantidad");
 const labelCantidad = document.getElementById("labelCantidad");
 
-// Cargar herramientas desde Web App
-fetch(WEB_APP_URL)
+// --- Cargar herramientas desde el Apps Script ---
+fetch(WEB_APP_URL + "?action=getHerramientas")
   .then(res => res.json())
   .then(data => {
     const lista = document.getElementById("listaHerramientas");
@@ -108,7 +109,7 @@ fetch(WEB_APP_URL)
   })
   .catch(err => console.error("Error cargando herramientas:", err));
 
-// Mostrar campos "Otros"
+// --- Mostrar campos “Otros” ---
 herramientaInput.addEventListener("input", function() {
   if (this.value === "Otros") {
     otrosCampos.style.display = "block";
@@ -123,21 +124,36 @@ herramientaInput.addEventListener("input", function() {
   }
 });
 
-// Enviar formulario
+// --- Enviar formulario ---
 document.getElementById("miFormulario").addEventListener("submit", function(e) {
   e.preventDefault();
+
   let payload = {};
-  if(herramientaInput.value === "Otros") {
+  if (herramientaInput.value === "Otros") {
     const nuevoNombre = document.getElementById("nuevoNombre").value.trim();
     const cantidadInicial = parseInt(document.getElementById("cantidadInicial").value);
-    if(!nuevoNombre || !cantidadInicial) { alert("Ingrese nombre y cantidad inicial"); return; }
-    payload = { nombre: this.nombre.value, operacion: "Ingreso", herramienta: nuevoNombre, cantidad: cantidadInicial };
+    if (!nuevoNombre || !cantidadInicial) {
+      alert("Ingrese nombre y cantidad inicial");
+      return;
+    }
+    payload = {
+      nombre: this.nombre.value,
+      operacion: "Ingreso",
+      herramienta: nuevoNombre,
+      cantidad: cantidadInicial
+    };
   } else {
-    payload = { nombre: this.nombre.value, operacion: this.operacion.value, herramienta: herramientaInput.value, cantidad: parseInt(cantidadInput.value) };
+    payload = {
+      nombre: this.nombre.value,
+      operacion: this.operacion.value,
+      herramienta: herramientaInput.value,
+      cantidad: parseInt(cantidadInput.value)
+    };
   }
 
   fetch(WEB_APP_URL, {
     method: "POST",
+    contentType: "application/json",
     body: JSON.stringify(payload)
   })
   .then(res => res.json())
@@ -148,9 +164,11 @@ document.getElementById("miFormulario").addEventListener("submit", function(e) {
     cantidadInput.style.display = "block";
     labelCantidad.style.display = "block";
   })
-  .catch(err => { console.error(err); alert("❌ Error al guardar"); });
+  .catch(err => {
+    console.error("Error:", err);
+    alert("❌ Error al guardar");
+  });
 });
 </script>
 </body>
 </html>
-
